@@ -1,0 +1,83 @@
+@startuml
+!include ../PlantUMLStyle/color.inc
+!include ../PlantUMLStyle/macro.inc
+
+component GUI [
+    Title(GUI)
+]
+
+component GUIConstructor [
+    Title(GUI構成モジュール)
+    ** 拡張可能 **
+    * GUI定義に基づいた
+      データベースエディタビューの構成
+]
+
+frame "Models" {
+    component DatabaseDefinitionManager <<データベース>> [
+        Title(データベース定義マネージャ)
+        ** 拡張可能 **
+        * データベース定義のパース
+        * データベース定義の定義補助
+    ]
+    interface "データベース定義(内部表現)" as DatabaseDefinition
+    DatabaseDefinitionManager -- DatabaseDefinition
+
+    component DatabaseManager <<データベース>> [
+        Title(データベースマネージャ)
+        * データベースの管理
+          (追加・更新・削除 等)
+        ]
+    interface "内部形式エクスポート" as InternalExport
+    DatabaseManager -- InternalExport
+    DatabaseManager -up-> DatabaseDefinition
+
+    component InterfaceGenerator [
+        Title(インターフェイスジェネレータ)
+        ** 拡張可能 **
+        * 各種言語向けのアクセサライブラリ出力
+        * 各種言語向けのデシリアライザライブラリ出力
+    ]
+    InterfaceGenerator -up-> DatabaseDefinition
+
+    component DatabaseSerializer [
+        Title(データベースシリアライザ)
+        ** 拡張可能 **
+        * データベース内部表現を
+          各種データ形式にシリアライズ
+    ]
+    DatabaseSerializer --> InternalExport
+
+    component ProjectManager [
+        Title(プロジェクトマネージャ)
+        * データベースの集合の管理
+        * アプリ状態の保存/読み込み
+    ]
+    note top of ProjectManager
+        アプリ状態には次のものを含む:
+        * データベース集合
+        * データベース内部表現
+        * 外部データベース参照
+        * その他アプリの動作に必要な状態
+    end note
+
+    component ExternalDatabaseManager [
+        Title(外部データベースマネージャ)
+        **拡張可能**
+        * 外部データベースのパース
+    ]
+    interface "外部データベース(内部表現)" as ExternalDatabase
+    ExternalDatabase -- ExternalDatabaseManager
+    DatabaseDefinition -- ExternalDatabaseManager
+}
+
+rectangle MemberType [
+    Title(メンバ定義)
+    * データベース定義で使用できる型の定義
+    * 定義される型に対して使用できる・される
+      GUI要素の定義
+]
+MemberType -down-> DatabaseDefinitionManager : 拡張
+MemberType -down-> GUIConstructor : 拡張
+
+@enduml

@@ -1,0 +1,1 @@
+!define Title(s) <size:18><b>s</b></size>

@@ -1,0 +1,53 @@
+@startuml
+!include ../PlantUMLStyle/color.inc
+
+/'
+書き下し完了したら消去
+* GUI構成モジュール
+* メンバ定義
+* データベース定義マネージャ
+* 外部データベースマネージャ
+* プロジェクトマネージャ
+* インターフェイスジェネレータ
+* データベースマネージャ
+* データベースシリアライザ
+'/
+
+note "メンバの型を表すクラスのインターフェイス" as NIMemberType
+interface IMemberType {
+    + ToInternalType()
+}
+NIMemberType .. IMemberType
+
+note "内部形式で利用可能な型を規定するクラスのインターフェイス" as NIInternalType
+interface IInternalType {
+
+}
+NIInternalType .. IInternalType
+
+class Int32InternalType extends IInternalType
+class DoubleInternalType extends IInternalType
+
+note "辞書オブジェクトを各種形式へ\n書き出すクラスのインターフェイス" as NIDatabaseSerializer
+abstract class IDatabaseSerializer {
+    # {abstract} string Extention { get; }
+    # {abstract} void Clear()
+    + {abstract} byte[] Serialize(List<IInternalType> root)
+}
+NIDatabaseSerializer .down. IDatabaseSerializer
+
+class MsgpackSerializer extends IDatabaseSerializer
+
+class JSONSerializer extends IDatabaseSerializer
+
+class DatabaseExporter {
+    + void Export()
+    - void ExportDatabaseFiles()
+    - void ExportDatabaseAccessor()
+}
+
+
+
+
+
+@enduml
